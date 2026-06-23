@@ -6,7 +6,7 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : (isset($_COOKIE['user_rol
 $nama_user = isset($_SESSION['nama']) ? $_SESSION['nama'] : (isset($_COOKIE['user_nama']) ? $_COOKIE['user_nama'] : 'Admin');
 
 if ($role !== 'sa') {
-    // Jika bukan super admin, langsung tendang kembali ke login
+    // Jika bukan super admin, langsung tendang kembali ke login menggunakan JavaScript
     echo "<script>alert('Sesi habis atau Akses ditolak! Silakan login kembali.'); window.location.href='../login.php';</script>";
     exit();
 }
@@ -20,12 +20,6 @@ if (file_exists(__DIR__ . '/../config/koneksi.php')) {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/config/koneksi.php';
 } else {
     require_once dirname(__DIR__, 2) . '/config/koneksi.php';
-}
-
-
-if (!isset($_SESSION['role']) || $_SESSION['role'] != 'sa') {
-    header("Location: ../login.php");
-    exit();
 }
 
 if (isset($_POST['simpan'])) {
