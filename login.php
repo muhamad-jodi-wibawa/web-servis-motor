@@ -1,6 +1,15 @@
 <?php
 session_start();
-require_once __DIR__ . '/config/koneksi.php';
+
+// Pengecekan jalur ganda otomatis untuk menjinakkan lingkungan Vercel
+if (file_exists(__DIR__ . '/config/koneksi.php')) {
+    require_once __DIR__ . '/config/koneksi.php';
+} else if (file_exists(__DIR__ . '/../config/koneksi.php')) {
+    require_once __DIR__ . '/../config/koneksi.php';
+} else {
+    // Jika Vercel mengisolasi fungsi secara mandiri, cari di folder luar absolut
+    require_once dirname(__DIR__) . '/config/koneksi.php';
+}
 
 if (isset($_POST['login'])) {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
@@ -123,8 +132,8 @@ if (isset($_POST['login'])) {
             Belum punya akun? <a href="registrasi.php" class="text-white text-decoration-none fw-bold">Daftar Sekarang</a>
         </div>
         <div class="mt-2 small text-white-50">
-        <a href="lupa_password.php" class="text-white small">Lupa password?</a>
-    </div>
+            <a href="lupa_password.php" class="text-white small">Lupa password?</a>
+        </div>
     </form>
 </div>
 
