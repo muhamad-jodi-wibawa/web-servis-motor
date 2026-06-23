@@ -2,14 +2,7 @@
 session_start();
 
 // Pengecekan jalur ganda otomatis untuk menjinakkan lingkungan Vercel
-if (file_exists(__DIR__ . '/config/koneksi.php')) {
-    require_once __DIR__ . '/config/koneksi.php';
-} else if (file_exists(__DIR__ . '/../config/koneksi.php')) {
-    require_once __DIR__ . '/../config/koneksi.php';
-} else {
-    // Jika Vercel mengisolasi fungsi secara mandiri, cari di folder luar absolut
-    require_once dirname(__DIR__) . '/config/koneksi.php';
-}
+require_once 'config/koneksi.php';
 
 if (isset($_POST['login'])) {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
