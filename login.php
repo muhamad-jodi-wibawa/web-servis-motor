@@ -31,9 +31,10 @@ if (isset($_POST['login'])) {
         $_SESSION['nama']    = $nama_user;
         $_SESSION['role']    = $data['role'];
 
-        // Mengamankan parameter cookie dari nilai null
-        setcookie('user_role', (string)$data['role'], time() + 3600, "/");
-        setcookie('user_nama', (string)$nama_user, time() + 3600, "/");
+        // KUNCI PERBAIKAN DI VERCEL: Membuat cookie cadangan termasuk ID User selama 24 jam (86400 detik)
+        setcookie('user_id', (string)$data['id_user'], time() + 86400, "/");
+        setcookie('user_role', (string)$data['role'], time() + 86400, "/");
+        setcookie('user_nama', (string)$nama_user, time() + 86400, "/");
 
         // Pengalihan arah via JavaScript yang bersih
         if ($data['role'] == 'sa') {
