@@ -2,13 +2,22 @@
 session_start();
 
 // Pengecekan jalur ganda otomatis untuk menjinakkan lingkungan Vercel
-require_once 'config/koneksi.php';
+if (file_exists(__DIR__ . '/config/koneksi.php')) {
+    require_once __DIR__ . '/config/koneksi.php';
+} else if (file_exists(__DIR__ . '/../config/koneksi.php')) {
+    require_once __DIR__ . '/../config/koneksi.php';
+} else if (isset($_SERVER['DOCUMENT_ROOT']) && file_exists($_SERVER['DOCUMENT_ROOT'] . '/config/koneksi.php')) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/config/koneksi.php';
+} else {
+    require_once dirname(__DIR__) . '/config/koneksi.php';
+}
 
 if (isset($_POST['login'])) {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
     $password = $_POST['password'];
 
-    $query = mysqli_query($conn, "SELECT * FROM users WHERE username='$username' AND password='$password'");
+    // Eksekusi query dengan pelacak error bawaan cloud
+    $query = mysqli_query($conn, "SELECT * FROM users WHERE username='$username' AND password='$password'") or die("Gagal query: " . mysqli_error($conn));
     $data = mysqli_fetch_assoc($query);
 
     if (mysqli_num_rows($query) > 0) {
@@ -16,11 +25,17 @@ if (isset($_POST['login'])) {
         $_SESSION['nama']    = $data['nama'];
         $_SESSION['role']    = $data['role'];
 
+        // Backup menggunakan Cookie agar login tetap bertahan di lingkungan serverless
+        setcookie('user_role', $data['role'], time() + 3600, "/");
+        setcookie('user_nama', $data['nama'], time() + 3600, "/");
+
+        // Menggunakan pengalihan JavaScript (jauh lebih stabil di Vercel daripada header PHP)
         if ($data['role'] == 'sa') {
-            header("Location: admin/dashboard_sa.php");
+            echo "<script>window.location.href='admin/dashboard_sa.php';</script>";
         } else {
-            header("Location: user/dashboard.php");
+            echo "<script>window.location.href='user/dashboard.php';</script>";
         }
+        exit();
     } else {
         echo "<script>alert('Username atau Password Salah!');</script>";
     }
@@ -37,7 +52,6 @@ if (isset($_POST['login'])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         body {
-            /* Gambar background berbeda: Nuansa alat bengkel/mesin */
             background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), 
                         url('https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?q=80&w=2000&auto=format&fit=crop');
             background-size: cover;
@@ -115,20 +129,4 @@ if (isset($_POST['login'])) {
             <input type="text" name="username" class="form-control" placeholder="Masukkan username" required>
         </div>
         <div class="mb-4 text-start">
-            <label class="form-label small opacity-75">Password</label>
-            <input type="password" name="password" class="form-control" placeholder="Masukkan password" required>
-        </div>
-        <button type="submit" name="login" class="btn btn-login w-100 mb-3 text-white">
-            MASUK KE SISTEM
-        </button>
-        <div class="mt-2 small text-white-50">
-            Belum punya akun? <a href="registrasi.php" class="text-white text-decoration-none fw-bold">Daftar Sekarang</a>
-        </div>
-        <div class="mt-2 small text-white-50">
-            <a href="lupa_password.php" class="text-white small">Lupa password?</a>
-        </div>
-    </form>
-</div>
-
-</body>
-</html>
+            <label class="form-
