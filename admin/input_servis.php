@@ -1,5 +1,4 @@
 <?php
-<?php
 session_start();
 
 // Validasi ganda menggunakan Session dan Cookie khusus lingkungan Vercel
@@ -22,8 +21,6 @@ if (file_exists(__DIR__ . '/../config/koneksi.php')) {
     require_once dirname(__DIR__, 2) . '/config/koneksi.php';
 }
 
-// ... Sisa kode query bawaan monitoring.php Anda ke bawah jangan dihapus ...
-?>
 // Menangkap ID Kendaraan jika diklik dari halaman monitoring
 $id_k_pilihan = isset($_GET['id_k']) ? $_GET['id_k'] : '';
 
@@ -38,6 +35,7 @@ if (isset($_POST['simpan'])) {
     
     if (mysqli_query($conn, $query)) {
         echo "<script>alert('Data Servis Berhasil Dicatat!'); window.location='monitoring.php';</script>";
+        exit();
     } else {
         echo "<script>alert('Gagal mencatat servis!');</script>";
     }
@@ -63,6 +61,7 @@ if (isset($_POST['simpan'])) {
             align-items: center;
             color: white;
             padding: 40px 0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
         }
 
         .glass-card {
@@ -121,8 +120,8 @@ if (isset($_POST['simpan'])) {
 </head>
 <body>
 
-<div class="container">
-    <div class="row justify-content-center">
+<div class="container w-100">
+    <div class="row justify-content-center w-100 m-0">
         <div class="col-lg-6">
             <div class="glass-card shadow-lg">
                 <div class="text-center mb-4">
@@ -173,7 +172,7 @@ if (isset($_POST['simpan'])) {
                         </div>
                     </div>
 
-                    <button type="submit" name="simpan" class="btn btn-submit w-100 text-white shadow">
+                    <button type="submit" name="simpan" class="btn btn-submit w-100 text-white shadow mb-4">
                         <i class="bi bi-cloud-arrow-up-fill me-2"></i> SIMPAN RIWAYAT SERVIS
                     </button>
                     <div class="text-center border-top pt-3 border-white border-opacity-10">
