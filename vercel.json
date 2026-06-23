@@ -1,7 +1,10 @@
 {
   "builds": [
+    { "src": "login.php", "use": "vercel-php@0.7.1" },
     { "src": "*.php", "use": "vercel-php@0.7.1" },
-    { "src": "config/*.php", "use": "vercel-php@0.7.1" }
+    { "src": "config/*.php", "use": "vercel-php@0.7.1" },
+    { "src": "user/*.php", "use": "vercel-php@0.7.1" },
+    { "src": "admin/*.php", "use": "vercel-php@0.7.1" }
   ],
   "routes": [
     { "src": "/$", "dest": "/login.php" },
