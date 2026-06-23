@@ -1,4 +1,8 @@
 <?php
+// Mengabaikan pesan deprecated/warning agar tidak merusak proses redirect cookie di Vercel
+error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_WARNING);
+ini_set('display_errors', 0);
+
 session_start();
 
 // Pengecekan jalur ganda otomatis untuk menjinakkan lingkungan Vercel
@@ -16,20 +20,22 @@ if (isset($_POST['login'])) {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
     $password = $_POST['password'];
 
-    // Eksekusi query dengan pelacak error bawaan cloud
     $query = mysqli_query($conn, "SELECT * FROM users WHERE username='$username' AND password='$password'") or die("Gagal query: " . mysqli_error($conn));
     $data = mysqli_fetch_assoc($query);
 
     if (mysqli_num_rows($query) > 0) {
+        // Amankan nilai nama jika bernilai NULL agar tidak memicu error setcookie()
+        $nama_user = !empty($data['nama']) ? $data['nama'] : $data['username'];
+
         $_SESSION['id_user'] = $data['id_user'];
-        $_SESSION['nama']    = $data['nama'];
+        $_SESSION['nama']    = $nama_user;
         $_SESSION['role']    = $data['role'];
 
-        // Backup menggunakan Cookie agar login tetap bertahan di lingkungan serverless
-        setcookie('user_role', $data['role'], time() + 3600, "/");
-        setcookie('user_nama', $data['nama'], time() + 3600, "/");
+        // Mengamankan parameter cookie dari nilai null
+        setcookie('user_role', (string)$data['role'], time() + 3600, "/");
+        setcookie('user_nama', (string)$nama_user, time() + 3600, "/");
 
-        // Menggunakan pengalihan JavaScript (jauh lebih stabil di Vercel daripada header PHP)
+        // Pengalihan arah via JavaScript yang bersih
         if ($data['role'] == 'sa') {
             echo "<script>window.location.href='admin/dashboard_sa.php';</script>";
         } else {
