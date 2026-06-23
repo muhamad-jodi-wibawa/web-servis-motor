@@ -1,14 +1,15 @@
 {
+  "version": 2,
   "builds": [
     { "src": "index.php", "use": "vercel-php@0.7.1" },
     { "src": "login.php", "use": "vercel-php@0.7.1" },
     { "src": "*.php", "use": "vercel-php@0.7.1" },
-    { "src": "config/*.php", "use": "vercel-php@0.7.1" },
-    { "src": "user/*.php", "use": "vercel-php@0.7.1" },
-    { "src": "admin/*.php", "use": "vercel-php@0.7.1" }
+    { "src": "config/koneksi.php", "use": "vercel-php@0.7.1" },
+    { "src": "user/dashboard.php", "use": "vercel-php@0.7.1" },
+    { "src": "user/tambah_motor.php", "use": "vercel-php@0.7.1" }
   ],
   "routes": [
-    { "src": "/$", "dest": "/index.php" },
+    { "src": "/$", "dest": "/login.php" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
