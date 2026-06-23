@@ -129,4 +129,20 @@ if (isset($_POST['login'])) {
             <input type="text" name="username" class="form-control" placeholder="Masukkan username" required>
         </div>
         <div class="mb-4 text-start">
-            <label class="form-
+            <label class="form-label small opacity-75">Password</label>
+            <input type="password" name="password" class="form-control" placeholder="Masukkan password" required>
+        </div>
+        <button type="submit" name="login" class="btn btn-login w-100 mb-3 text-white">
+            MASUK KE SISTEM
+        </button>
+        <div class="mt-2 small text-white-50">
+            Belum punya akun? <a href="registrasi.php" class="text-white text-decoration-none fw-bold">Daftar Sekarang</a>
+        </div>
+        <div class="mt-2 small text-white-50">
+            <a href="lupa_password.php" class="text-white small">Lupa password?</a>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>
