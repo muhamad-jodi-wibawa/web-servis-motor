@@ -1,24 +1,43 @@
 <?php
 session_start();
-require_once '../config/koneksi.php';
 
-// Pastikan yang akses adalah user
-if (!isset($_SESSION['role']) || $_SESSION['role'] != 'user') {
-    header("Location: ../login.php");
+// Validasi ganda menggunakan Session dan Cookie khusus lingkungan Vercel
+$role = isset($_SESSION['role']) ? $_SESSION['role'] : (isset($_COOKIE['user_role']) ? $_COOKIE['user_role'] : '');
+$nama_user = isset($_SESSION['nama']) ? $_SESSION['nama'] : (isset($_COOKIE['user_nama']) ? $_COOKIE['user_nama'] : 'User');
+
+if ($role !== 'user' && $role !== 'sa') {
+    echo "<script>alert('Silakan login terlebih dahulu.'); window.location.href='../login.php';</script>";
     exit();
 }
 
+// Pengecekan jalur koneksi database otomatis khusus Vercel
+if (file_exists(__DIR__ . '/../config/koneksi.php')) {
+    require_once __DIR__ . '/../config/koneksi.php';
+} else if (file_exists(__DIR__ . '/../../config/koneksi.php')) {
+    require_once __DIR__ . '/../../config/koneksi.php';
+} else if (isset($_SERVER['DOCUMENT_ROOT']) && file_exists($_SERVER['DOCUMENT_ROOT'] . '/config/koneksi.php')) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/config/koneksi.php';
+} else {
+    require_once dirname(__DIR__, 2) . '/config/koneksi.php';
+}
+
 if (isset($_POST['daftar'])) {
-    $id_user = $_SESSION['id_user']; // Ambil ID dari session login
+    $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : ''; 
     $plat_nomor = mysqli_real_escape_string($conn, strtoupper($_POST['plat_nomor']));
     $tipe_kendaraan = mysqli_real_escape_string($conn, $_POST['tipe_kendaraan']);
 
-    $query = "INSERT INTO kendaraan (id_user, plat_nomor, tipe_kendaraan) VALUES ('$id_user', '$plat_nomor', '$tipe_kendaraan')";
-    
-    if (mysqli_query($conn, $query)) {
-        echo "<script>alert('Motor Berhasil Didaftarkan!'); window.location='dashboard.php';</script>";
+    if (!empty($id_user)) {
+        $query = "INSERT INTO kendaraan (id_user, plat_nomor, tipe_kendaraan) VALUES ('$id_user', '$plat_nomor', '$tipe_kendaraan')";
+        
+        if (mysqli_query($conn, $query)) {
+            echo "<script>alert('Motor Berhasil Didaftarkan!'); window.location.href='dashboard.php';</script>";
+            exit();
+        } else {
+            echo "<script>alert('Gagal Mendaftarkan Motor!');</script>";
+        }
     } else {
-        echo "<script>alert('Gagal Mendaftarkan Motor!');</script>";
+        echo "<script>alert('Sesi Anda tidak valid. Silakan login ulang.'); window.location.href='../login.php';</script>";
+        exit();
     }
 }
 ?>
@@ -39,6 +58,7 @@ if (isset($_POST['daftar'])) {
             display: flex;
             align-items: center;
             color: white;
+            font-family: 'Segoe UI', Roboto, sans-serif;
         }
         .glass-card {
             background: rgba(255, 255, 255, 0.1);
