@@ -1,14 +1,38 @@
 <?php
 session_start();
-require_once '../config/koneksi.php';
-require_once '../algoritma.php'; 
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] != 'user') { 
-    header("Location: ../login.php"); 
-    exit(); 
+// Validasi ganda menggunakan Session dan Cookie khusus lingkungan Vercel
+$role = isset($_SESSION['role']) ? $_SESSION['role'] : (isset($_COOKIE['user_role']) ? $_COOKIE['user_role'] : '');
+$nama_user = isset($_SESSION['nama']) ? $_SESSION['nama'] : (isset($_COOKIE['user_nama']) ? $_COOKIE['user_nama'] : 'Rider');
+
+if ($role !== 'user' && $role !== 'sa') { 
+    // Jika tidak valid, tendang kembali ke login menggunakan JavaScript yang aman bagi Vercel
+    echo "<script>alert('Silakan login terlebih dahulu.'); window.location.href='../login.php';</script>";
+    exit();
 }
 
-$id_user = $_SESSION['id_user'];
+// Pengecekan jalur koneksi database otomatis khusus Vercel
+if (file_exists(__DIR__ . '/../config/koneksi.php')) {
+    require_once __DIR__ . '/../config/koneksi.php';
+} else if (file_exists(__DIR__ . '/../../config/koneksi.php')) {
+    require_once __DIR__ . '/../../config/koneksi.php';
+} else if (isset($_SERVER['DOCUMENT_ROOT']) && file_exists($_SERVER['DOCUMENT_ROOT'] . '/config/koneksi.php')) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/config/koneksi.php';
+} else {
+    require_once dirname(__DIR__, 2) . '/config/koneksi.php';
+}
+
+// Pengecekan jalur file algoritma otomatis khusus Vercel
+if (file_exists(__DIR__ . '/../algoritma.php')) {
+    require_once __DIR__ . '/../algoritma.php';
+} else if (file_exists(__DIR__ . '/../../algoritma.php')) {
+    require_once __DIR__ . '/../../algoritma.php';
+} else {
+    require_once dirname(__DIR__, 2) . '/algoritma.php';
+}
+
+// Gunakan ID User cadangan jika session serverless terhapus
+$id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
 
 // Ambil list kendaraan user
 $q_list = mysqli_query($conn, "SELECT id_kendaraan, plat_nomor, tipe_kendaraan FROM kendaraan WHERE id_user = '$id_user'");
@@ -26,7 +50,8 @@ if (!$id_k_aktif && $jumlah_kendaraan > 0) {
 $has_vehicle = false;
 $analisis = null;
 if ($id_k_aktif) {
-    $q_detail = mysqli_query($conn, "SELECT * FROM kendaraan WHERE id_kendaraan = '$id_k_aktif' AND id_user = '$id_user'");
+    // Super Admin ('sa') juga diberikan izin melihat data ini jika sedang melakukan simulasi/viewing
+    $q_detail = mysqli_query($conn, "SELECT * FROM kendaraan WHERE id_kendaraan = '$id_k_aktif'" . ($role === 'user' ? " AND id_user = '$id_user'" : ""));
     $data_ken = mysqli_fetch_assoc($q_detail);
     if ($data_ken) {
         $has_vehicle = true;
@@ -35,8 +60,10 @@ if ($id_k_aktif) {
 }
 
 // FUNGSI HELPER
-function cleanNumber($val) {
-    return (float)str_replace(',', '', $val);
+if (!function_exists('cleanNumber')) {
+    function cleanNumber($val) {
+        return (float)str_replace(',', '', $val);
+    }
 }
 ?>
 
@@ -117,7 +144,7 @@ function cleanNumber($val) {
     <div class="container">
         <a class="navbar-brand fw-bold" href="#"><i class="bi bi-speedometer2 text-danger"></i> SERVISKU <span class="fw-light">MOTOR</span></a>
         <div class="d-flex align-items-center">
-            <span class="me-3 small d-none d-md-inline">Rider: <strong><?= $_SESSION['nama'] ?></strong></span>
+            <span class="me-3 small d-none d-md-inline">Rider: <strong><?= htmlspecialchars($nama_user) ?></strong></span>
             <a href="../logout.php" class="btn btn-danger btn-sm rounded-pill px-3">Logout</a>
         </div>
     </div>
