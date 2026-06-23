@@ -1,6 +1,16 @@
 <?php
 session_start();
-require_once '../config/koneksi.php';
+// Pengecekan jalur ganda otomatis khusus lingkungan Vercel
+if (file_exists(__DIR__ . '/../config/koneksi.php')) {
+    require_once __DIR__ . '/../config/koneksi.php';
+} else if (file_exists(__DIR__ . '/../../config/koneksi.php')) {
+    require_once __DIR__ . '/../../config/koneksi.php';
+} else if (isset($_SERVER['DOCUMENT_ROOT']) && file_exists($_SERVER['DOCUMENT_ROOT'] . '/config/koneksi.php')) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/config/koneksi.php';
+} else {
+    // Jalur fallback terakhir
+    require_once dirname(__DIR__, 2) . '/config/koneksi.php';
+}
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] != 'sa') {
     header("Location: ../login.php");
