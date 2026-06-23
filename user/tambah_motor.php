@@ -22,7 +22,9 @@ if (file_exists(__DIR__ . '/../config/koneksi.php')) {
 }
 
 if (isset($_POST['daftar'])) {
-    $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : ''; 
+    // KUNCI PERBAIKAN: Ambil ID User dari Session, jika kosong ambil dari Cookie cadangan
+    $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : (isset($_COOKIE['user_id']) ? $_COOKIE['user_id'] : ''); 
+    
     $plat_nomor = mysqli_real_escape_string($conn, strtoupper($_POST['plat_nomor']));
     $tipe_kendaraan = mysqli_real_escape_string($conn, $_POST['tipe_kendaraan']);
 
@@ -33,10 +35,10 @@ if (isset($_POST['daftar'])) {
             echo "<script>alert('Motor Berhasil Didaftarkan!'); window.location.href='dashboard.php';</script>";
             exit();
         } else {
-            echo "<script>alert('Gagal Mendaftarkan Motor!');</script>";
+            echo "<script>alert('Gagal Mendaftarkan Motor ke Database!');</script>";
         }
     } else {
-        echo "<script>alert('Sesi Anda tidak valid. Silakan login ulang.'); window.location.href='../login.php';</script>";
+        echo "<script>alert('Sesi Anda tidak valid / ID tidak terbaca. Silakan login ulang.'); window.location.href='../login.php';</script>";
         exit();
     }
 }
