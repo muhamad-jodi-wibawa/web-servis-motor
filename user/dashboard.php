@@ -6,7 +6,6 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : (isset($_COOKIE['user_rol
 $nama_user = isset($_SESSION['nama']) ? $_SESSION['nama'] : (isset($_COOKIE['user_nama']) ? $_COOKIE['user_nama'] : 'Rider');
 
 if ($role !== 'user' && $role !== 'sa') { 
-    // Jika tidak valid, tendang kembali ke login menggunakan JavaScript yang aman bagi Vercel
     echo "<script>alert('Silakan login terlebih dahulu.'); window.location.href='../login.php';</script>";
     exit();
 }
@@ -31,26 +30,26 @@ if (file_exists(__DIR__ . '/../algoritma.php')) {
     require_once dirname(__DIR__, 2) . '/algoritma.php';
 }
 
-// Gunakan ID User cadangan jika session serverless terhapus
 $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
 
-// Ambil list kendaraan user
+// 1. Ambil list kendaraan user (Query utama untuk drop-down)
 $q_list = mysqli_query($conn, "SELECT id_kendaraan, plat_nomor, tipe_kendaraan FROM kendaraan WHERE id_user = '$id_user'");
 $jumlah_kendaraan = mysqli_num_rows($q_list);
 
 $id_k_aktif = isset($_GET['id_k']) ? $_GET['id_k'] : null;
 
-// Jika belum pilih kendaraan, pilih yang pertama secara otomatis
+// 2. Ambil ID pertama lewat query terpisah agar tidak merusak pointer data $q_list
 if (!$id_k_aktif && $jumlah_kendaraan > 0) {
-    $row_first = mysqli_fetch_assoc($q_list);
-    $id_k_aktif = $row_first['id_kendaraan'];
-    mysqli_data_seek($q_list, 0); 
+    $q_first = mysqli_query($conn, "SELECT id_kendaraan FROM kendaraan WHERE id_user = '$id_user' LIMIT 1");
+    $row_first = mysqli_fetch_assoc($q_first);
+    if ($row_first) {
+        $id_k_aktif = $row_first['id_kendaraan'];
+    }
 }
 
 $has_vehicle = false;
 $analisis = null;
 if ($id_k_aktif) {
-    // Super Admin ('sa') juga diberikan izin melihat data ini jika sedang melakukan simulasi/viewing
     $q_detail = mysqli_query($conn, "SELECT * FROM kendaraan WHERE id_kendaraan = '$id_k_aktif'" . ($role === 'user' ? " AND id_user = '$id_user'" : ""));
     $data_ken = mysqli_fetch_assoc($q_detail);
     if ($data_ken) {
@@ -162,7 +161,7 @@ if (!function_exists('cleanNumber')) {
                         <?php else: ?>
                             <?php while($list = mysqli_fetch_assoc($q_list)): ?>
                                 <option value="<?= $list['id_kendaraan'] ?>" <?= ($id_k_aktif == $list['id_kendaraan']) ? 'selected' : '' ?>>
-                                    <?= strtoupper($list['plat_nomor']) ?> - <?= $list['tipe_kendaraan'] ?>
+                                    <?= strtoupper($list['plat_nomor']) ?> - <?= htmlspecialchars($list['tipe_kendaraan']) ?>
                                 </option>
                             <?php endwhile; ?>
                         <?php endif; ?>
@@ -244,7 +243,7 @@ if (!function_exists('cleanNumber')) {
                                         echo "<tr>
                                                 <td class='ps-4'>".date('d/m/Y', strtotime($row['tgl_servis']))."</td>
                                                 <td class='fw-bold text-danger'>".number_format($km_safe)." KM</td>
-                                                <td class='small opacity-75'>".$row['keterangan']."</td>
+                                                <td class='small opacity-75'>".htmlspecialchars($row['keterangan'])."</td>
                                               </tr>";
                                     }
                                 } else {
